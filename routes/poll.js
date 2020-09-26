@@ -13,21 +13,23 @@ const pusher = new Pusher({
   secret: 'e9f0377c7abb0cdd2bc7',
   cluster: 'eu',
   encrypted: true,
+  // useTLS: true,
 });
 
 router.get('/', (req, res) => {
+  console.log('Musa salumu');
   Vote.find().then((votes) => {
     return res.json({ success: true, votes: votes });
   });
 });
 
 router.post('/', (req, res) => {
-  const newVote = { os: req.body.os, points: 1 };
+  const newVote = { framework: req.body.framework, points: 1 };
 
   new Vote(newVote).save().then((vote) => {
-    pusher.trigger('os-polls', 'os-vote', {
+    pusher.trigger('framework-polls', 'framework-vote', {
       point: parseInt(vote.points),
-      os: vote.os,
+      framework: vote.framework,
     });
     return res.json({ success: true, message: 'Thank you for voting' });
   });

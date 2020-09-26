@@ -2,9 +2,10 @@ const form = document.getElementById('vote-form');
 
 form.addEventListener('submit', (e) => {
   e.preventDefault();
-  const choice = document.querySelector('input[name=os]:checked').value;
-  const data = { os: choice };
-  //Call the API
+  const choice = document.querySelector('input[name=framework]:checked').value;
+
+  const data = { framework: choice };
+  //Call the API => POST method
   fetch('http://localhost:5000/poll', {
     method: 'POST',
     headers: {
@@ -14,32 +15,36 @@ form.addEventListener('submit', (e) => {
   })
     .then((res) => res.json())
     .then((data) => {
-      console.log('Send');
+      console.log(data);
     })
     .catch((err) => {
-      console.log(err);
+      console.log('Error', err);
     });
 });
 
-//Fetching data
-
+//Fetching data = GET
 fetch('http://localhost:5000/poll')
   .then((res) => res.json())
   .then((data) => {
+    console.log('DATA', data);
     const votes = data.votes;
     const totalVotes = votes.length;
 
     const voteCounts = votes.reduce((acc, currVote) => {
-      acc[currVote.os] = (acc[currVote.os] || 0) + parseInt(currVote.points);
+      acc[currVote.framework] =
+        (acc[currVote.framework] || 0) + parseInt(currVote.points);
       return acc;
     }, {});
 
     //IMPLEMENTING CANVAS JS
     let dataPoints = [
-      { label: 'Window', y: voteCounts.Window },
-      { label: 'MacOS', y: voteCounts.MacOS },
-      { label: 'Linux', y: voteCounts.Linux },
-      { label: 'Other', y: voteCounts.Other },
+      { label: 'React', y: voteCounts.React ? voteCounts.React : 0 },
+      { label: 'Angular', y: voteCounts.Angular ? voteCounts.Angular : 0 },
+      { label: 'Vue.js', y: voteCounts['Vue.js'] ? voteCounts['Vue.js'] : 0 },
+      {
+        label: 'Ember.js',
+        y: voteCounts['Ember.js'] ? voteCounts['Ember.js'] : 0,
+      },
     ];
 
     const chartContainer = document.querySelector('#chartContainer');
@@ -49,7 +54,7 @@ fetch('http://localhost:5000/poll')
         animationEnabled: true,
         theme: 'theme1',
         title: {
-          text: `OS Results -${totalVotes} votes `,
+          text: `Framework Results -${totalVotes} votes `,
         },
         data: [{ type: 'column', dataPoints: dataPoints }],
       });
@@ -57,16 +62,16 @@ fetch('http://localhost:5000/poll')
       //Render a chart
       chart.render();
       // Enable pusher logging - don't include this in production
-      //   Pusher.logToConsole = true;
+      // Pusher.logToConsole = true;
 
       const pusher = new Pusher('89259f67dec6904e068c', {
         cluster: 'eu',
       });
 
-      const channel = pusher.subscribe('os-polls');
-      channel.bind('os-vote', function (data) {
+      const channel = pusher.subscribe('framework-polls');
+      channel.bind('framework-vote', function (data) {
         dataPoints = dataPoints.map((x) => {
-          if (x.label === data.os) {
+          if (x.label === data.framework) {
             x.y += data.point;
             return x;
           } else {
