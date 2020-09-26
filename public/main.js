@@ -28,7 +28,6 @@ fetch('http://localhost:5000/poll')
   .then((data) => {
     console.log('DATA', data);
     const votes = data.votes;
-    const totalVotes = votes.length;
 
     const voteCounts = votes.reduce((acc, currVote) => {
       acc[currVote.framework] =
@@ -54,7 +53,7 @@ fetch('http://localhost:5000/poll')
         animationEnabled: true,
         theme: 'theme1',
         title: {
-          text: `Framework Results -${totalVotes} votes `,
+          text: `Frameworks Results`,
         },
         data: [{ type: 'column', dataPoints: dataPoints }],
       });
@@ -70,9 +69,12 @@ fetch('http://localhost:5000/poll')
 
       const channel = pusher.subscribe('framework-polls');
       channel.bind('framework-vote', function (data) {
+        console.log('Dta', data);
+
         dataPoints = dataPoints.map((x) => {
           if (x.label === data.framework) {
             x.y += data.point;
+
             return x;
           } else {
             return x;
@@ -82,3 +84,12 @@ fetch('http://localhost:5000/poll')
       });
     }
   });
+
+// function totalVoters(voters) {
+//   let sum = 0;
+//   sum = voters.reduce((sum, curr) => {
+//     return sum + curr.y;
+//   }, 0);
+
+//   return sum;
+// }
